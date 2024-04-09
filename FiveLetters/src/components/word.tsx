@@ -10,6 +10,7 @@ interface WordInputProps {}
 
 const WordInput: React.FC<WordInputProps> = () => {
   const inputRefs = useRef<Array<HTMLInputElement>>(Array(5).fill(null));
+  const currentInputRef = useRef<HTMLInputElement>(null);
   const [inputValues, setInputValues] = useState<string[]>(['', '', '', '', '']);
   const [history, setHistory] = useState<{ word: string; isMatch: boolean }[]>([]);
   const [attempts, setAttempts] = useState<number>(6);
@@ -128,12 +129,12 @@ const WordInput: React.FC<WordInputProps> = () => {
       <div>
         <h3>История попыток:</h3>
         {history.map((item, index) => (
-          <div key={index}>{renderHighlightedWord(item.word, item.isMatch)}</div>
+          <div key={index}>{renderHighlightedWord(item.word)}</div>
         ))}
       </div>
       <p>Попыток осталось: {attempts}</p>
     </div>
   );                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
-};
+};  
 
 export default WordInput;

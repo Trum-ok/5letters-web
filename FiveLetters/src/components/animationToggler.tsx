@@ -1,9 +1,22 @@
-import React from 'react'
-
-function Toggle() {
-  return (
-    <> <input type="checkbox" id="toggle"/>  </>
-  )
+interface ToggleTypewriterProps {
+  toggleTypewriter: () => void;
+  isTypewriterActive: boolean;
+  styles: React.CSSProperties;
 }
 
-export default Toggle
+const ToggleTypewriter = ({ toggleTypewriter, isTypewriterActive, styles }: ToggleTypewriterProps) => {
+  return (
+    <div className="togler" style={styles}>
+      <label>
+        <input
+          type="checkbox"
+          onChange={ toggleTypewriter}
+          checked={!isTypewriterActive}
+        />
+        Отключить анимацию
+      </label>
+    </div>
+  );
+};
+
+export default ToggleTypewriter;

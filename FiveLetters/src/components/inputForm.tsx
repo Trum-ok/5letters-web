@@ -3,7 +3,7 @@ interface InputFormProps {
   value: string;
   hIC: (index: number, event: any) => void;
   hKD: (index: number, event: any) => void;
-  iRefs: { [key: number]: HTMLInputElement; };
+  iRefs: { current: HTMLInputElement[];};
 }
 
 const InputForm = ({ index, value, hIC, hKD, iRefs }: InputFormProps) => {
