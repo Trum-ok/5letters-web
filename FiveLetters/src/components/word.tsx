@@ -1,5 +1,10 @@
 import React, { useState, ChangeEvent, useRef, useEffect } from 'react';
-import enterIcon from '../assets/enter.svg';
+import { fetchRandomWord } from './wordService';
+import InputForm from './inputForm';
+import SubmitButton from './submitButton';
+import mask from './wordMask';
+import Guessed from './guessed';
+import NGuessed from './notGuessed';
 
 interface WordInputProps {}
 
@@ -13,23 +18,7 @@ const WordInput: React.FC<WordInputProps> = () => {
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
 
   useEffect(() => {
-    // Fetch random word from the Flask server
-    fetch("http://127.0.0.1:8080/get_random_word", {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      mode: 'cors',
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => setTargetWord(data.word))
-      .catch(error => console.error("Error fetching random word:", error));
+    fetchRandomWord().then(word => setTargetWord(word));
   }, []);
 
   const handleInputChange = (index: number, event: ChangeEvent<HTMLInputElement>) => {
@@ -68,8 +57,7 @@ const WordInput: React.FC<WordInputProps> = () => {
     setAttempts(attempts - 1);
 
     if (isMatch && submittedWord === targetWord) {
-      // Если слово полностью угадано, скрываем элементы
-      setIsWordGuessed(true);
+      setIsWordGuessed(true); // Если слово полностью угадано, скрываем элементы
     }
 
     if (attempts === 1) {
@@ -93,7 +81,7 @@ const WordInput: React.FC<WordInputProps> = () => {
 
   const renderHighlightedWord = (word: string): React.ReactNode => {
     const elements: React.ReactNode[] = [];
-    const wordMask = mask(word);
+    const wordMask = mask(word, targetWord);
   
     for (let i = 0; i < word.length; i++) {
       const char = word[i];
@@ -123,103 +111,20 @@ const WordInput: React.FC<WordInputProps> = () => {
     } else if (maskChar === char) {
       return '#ffdd2d';
     } else {
-      // Handle other cases if needed
       return 'black';
     }
   };
-  
-  const mask = (word: string): string => {
-    let wordMask = '';
-  
-    if (word === targetWord) {
-      return word;
-    }
-  
-    let localAnswer = targetWord;
-  
-    for (let i = 0; i < 5; i++) {
-      if (word[i] === targetWord[i]) {
-        wordMask += targetWord[i];
-      } else if (word[i] && localAnswer.includes(word[i])) {
-        wordMask += '#';
-      } else {
-        wordMask += '0';
-      }
-      localAnswer = localAnswer.replace(word[i], '');
-    }
-  
-    return wordMask;
-  };
-  
 
   return (
     <div>
       {!isWordGuessed && !isGameOver && (
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-          {inputValues.map((value, index) => (
-            <input
-              key={index}
-              type="text"
-              pattern='[а-яА-Я]+'
-              value={value}
-              onChange={(event) => handleInputChange(index, event)}
-              onKeyDown={(event) => handleKeyDown(index, event)}
-              maxLength={1}
-              ref={(input) => (inputRefs.current[index] = input)}
-              style={{
-                marginRight: '5px',
-                height: '50px',
-                width: '50px',
-                textAlign: 'center',
-                borderRadius: '5px',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                border: 'none',
-                outline: 'none',
-              }}
-              onFocus={() => {
-                inputRefs.current[index].style.boxShadow = '0 0 2px 1px white';
-              }}
-              onBlur={() => {
-                inputRefs.current[index].style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
-              }}
-            />
-          ))}
-          <button
-            onClick={handleSubmit}
-            disabled={attempts === 0}
-            style={{
-              width: '30px',
-              height: '30px',
-              borderRadius: '5px',
-              padding: '0',
-              backgroundColor: attempts === 0 ? 'grey' : '#ffdd2d',
-              color: 'white',
-              border: 'none',
-              cursor: attempts === 0 ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyItems: 'center',
-            }}
-          >
-            <img
-              src={enterIcon}
-              style={{
-                width: '20px',
-                height: '20px',
-              }}
-            />
-          </button>
+          {inputValues.map((value, index) => (< InputForm index={index} value={value} hIC={handleInputChange} hKD={handleKeyDown} iRefs={inputRefs} />))}
+          < SubmitButton onClick={handleSubmit} attempts={attempts} />
         </div>
       )}
-      {isWordGuessed && (
-        <h2 style={{ fontSize: '24px' }}>Угадано: <span style={{color: '#00a651'}}>{targetWord}</span></h2>
-      )}
-      {isGameOver && (
-        <div>
-          <h2 style={{ fontSize: '24px' }}>Игра окончена!</h2>
-          <p style={{ fontSize: '18px' }}>Загаданное слово: <span style={{color: '#ffdd2d'}}>{targetWord}</span></p>
-        </div>
-      )}
+      {isWordGuessed && (<Guessed word={targetWord} />)}
+      {isGameOver && (< NGuessed word={targetWord} />)}
       <div>
         <h3>История попыток:</h3>
         {history.map((item, index) => (
@@ -228,7 +133,7 @@ const WordInput: React.FC<WordInputProps> = () => {
       </div>
       <p>Попыток осталось: {attempts}</p>
     </div>
-  );
+  );                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
 };
 
 export default WordInput;
