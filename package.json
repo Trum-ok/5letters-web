@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "bootstrap": "^5.3.2",
+    "cors": "^2.8.5",
+    "react-helmet": "^6.1.0",
+    "react-helmet-async": "^2.0.4",
+    "typewriter-effect": "^2.21.0"
+  }
+}
