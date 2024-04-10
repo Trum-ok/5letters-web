@@ -1,18 +1,12 @@
-# 5letters
-Simple Wordle copy with russian words list
+# 5 БУКВ
+Что-то похожее на [**Wordle**](https://wordlegame.org/) и [**5 БУКВ**](https://5bukv.tinkoff.ru/) (в Тинькофф)
 
-# Usage
+# Правила
 
-```sh
-python3 app.py
-```
-Enter a five-letter word and see the results:
-![screen](screen.png)
+- серая буква - ее нет в слове
+- белая буква - не на своем месте
+- желтая буква - на правильном месте
 
-0 - that letter is not in the word  
-\# - this letter is out of position   
-letter - this letter is in position
+Чтобы угадать слово есть 6 попыток.
 
-You have six tries. 
-
-## Good luck!
+## Удачи!
