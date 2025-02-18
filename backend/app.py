@@ -7,6 +7,7 @@ from flask import Flask, jsonify, Response
 
 from metrics import init_metrics
 from config import FLASK_PORT, PROMETHEUS_PORT
+from logs import logger, log_action, log_request_start, log_request_end, error_handler
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -17,12 +18,14 @@ with open("russian_words.txt", "r") as txt_file:
     words = txt_file.read().split()
 
 
-@app.route("/")
+@app.route("/", methods=["GET"])
+@log_action("main page")
 def index() -> Response:
     return jsonify({"status": "ok"}), 200
 
 
 @app.route("/get_random_word", methods=["GET"])
+@log_action("get random word")
 def get_random_word() -> Response:
     random_word = random.choice(words).upper()
     print(
@@ -30,6 +33,21 @@ def get_random_word() -> Response:
         word: {random_word}
         ''')
     return jsonify({"word": random_word}), 200
+
+
+@app.before_request
+def br() -> None:
+    log_request_start()
+
+    
+@app.after_request
+def ar(response):
+    return log_request_end(response)
+
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    return error_handler(e)
 
 
 def main() -> None:
