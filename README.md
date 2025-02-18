@@ -1,4 +1,4 @@
-<div><img src='./frontend/FiveLetters/public/5llogo.ico' alt ='logo' width=90px><h1>5 БУКВ</h1></div>
+<div><img src='./frontend/public/5llogo.ico' alt ='logo' width=90px><h1>5 БУКВ</h1></div>
 
 
 Что-то похожее на [**Wordle**](https://wordlegame.org/) и [**5 БУКВ**](https://5bukv.tinkoff.ru/) *(Тинькофф)*
