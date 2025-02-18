@@ -11,7 +11,8 @@ logger.setLevel(logging.INFO)
 
 handler = logging.StreamHandler()
 formatter = JsonFormatter(
-    "%(asctime)s %(levelname)s %(name)s %(message)s %(route)s %(method)s %(status)s"
+    "%(asctime)s %(levelname)s %(name)s %(message)s %(route)s %(method)s %(status)s",
+    json_ensure_ascii=False
 )
 handler.setFormatter(formatter)
 logger.addHandler(handler)

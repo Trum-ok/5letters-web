@@ -1,6 +1,7 @@
 import random
 import argparse
 
+from pathlib import Path
 from flask_cors import CORS
 from flask import Flask, jsonify, Response
 # from elasticsearch import Elasticsearch
@@ -10,12 +11,27 @@ from config import FLASK_PORT, PROMETHEUS_PORT
 from logs import logger, log_action, log_request_start, log_request_end, error_handler
 
 app = Flask(__name__)
+app.logger = logger
 cors = CORS(app)
 # es = Elasticsearch(["elasticsearch:9200"], timeout=30)
 
-# TODO: стоит ли всегда хранить его в считанном виде?
-with open("russian_words.txt", "r") as txt_file:  
-    words = txt_file.read().split()
+_words: list[str] = []
+
+# with open("russian_words.txt", "r") as txt_file:  
+#     words = txt_file.read().split()
+
+
+def load_words() -> None:
+    """Загружает слова из файла в память"""
+    global _words
+    try:
+        file_path = Path("russian_words.txt")
+        _words = file_path.read_text(encoding="utf-8").split()
+        if not _words:
+            raise ValueError("File is empty")
+    except Exception as e:
+        app.logger.error(f"Error loading words: {str(e)}")
+        exit(1)
 
 
 @app.route("/", methods=["GET"])
@@ -27,11 +43,8 @@ def index() -> Response:
 @app.route("/get_random_word", methods=["GET"])
 @log_action("get random word")
 def get_random_word() -> Response:
-    random_word = random.choice(words).upper()
-    print(
-        f'''
-        word: {random_word}
-        ''')
+    random_word = random.choice(_words).upper()
+    app.logger.info(f'get_random_word: {random_word}')
     return jsonify({"word": random_word}), 200
 
 
@@ -58,6 +71,7 @@ def main() -> None:
     args = parser.parse_args()
     
     init_metrics(app, port=args.promport)
+    load_words()
 
     app.debug = args.debug
     app.run(host="0.0.0.0", port=args.port)
