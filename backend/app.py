@@ -1,5 +1,4 @@
 import random
-import argparse
 
 from pathlib import Path
 from flask_cors import CORS
@@ -7,7 +6,7 @@ from flask import Flask, jsonify, Response
 # from elasticsearch import Elasticsearch
 
 from metrics import init_metrics
-from config import FLASK_PORT, PROMETHEUS_PORT
+from config import PROMETHEUS_PORT
 from logs import logger, log_action, log_request_start, log_request_end, error_handler
 
 app = Flask(__name__)
@@ -16,9 +15,6 @@ cors = CORS(app)
 # es = Elasticsearch(["elasticsearch:9200"], timeout=30)
 
 _words: list[str] = []
-
-# with open("russian_words.txt", "r") as txt_file:  
-#     words = txt_file.read().split()
 
 
 def load_words() -> None:
@@ -63,19 +59,30 @@ def handle_exception(e):
     return error_handler(e)
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--port", default=FLASK_PORT, type=int)
-    parser.add_argument("--promport", default=PROMETHEUS_PORT, type=int)
-    parser.add_argument("--debug", default=False, type=bool)
-    args = parser.parse_args()
-    
-    init_metrics(app, port=args.promport)
+def prod_app():
+    # init_metrics(app, PROMETHEUS_PORT)
     load_words()
+    app.debug = False
+    return app
 
-    app.debug = args.debug
-    app.run(host="0.0.0.0", port=args.port)
+app = prod_app()
 
+## uncomment to run without docker & gunicorn
+# import argparse
+#
+# def local_main() -> None:
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument("--port", default=FLASK_PORT, type=int)
+#     parser.add_argument("--promport", default=PROMETHEUS_PORT, type=int)
+#     parser.add_argument("--debug", default=False, type=bool)
+#     args = parser.parse_args()
+    
+#     init_metrics(app, port=args.promport)
+#     load_words()
 
-if __name__ == "__main__":
-    main()
+#     app.debug = args.debug
+#     app.run(host="0.0.0.0", port=args.port)
+#
+#
+# if __name__ == "__main__":
+#     local_main()

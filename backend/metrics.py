@@ -39,4 +39,4 @@ def init_metrics(app: Flask, port=5001):
         return response
     
     # Запуск сервера метрик
-    start_http_server(port)
+    start_http_server(port=port)
