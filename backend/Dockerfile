@@ -28,3 +28,4 @@ COPY russian_words.txt .
 COPY . .
 
 CMD ["sh", "-c", "gunicorn app:app ${GUNICORN_CMD_ARGS}"]
+# CMD ["sh", "-c", "gunicorn app:app ${GUNICORN_CMD_ARGS} & python -m prometheus_client --port=${PROMETHEUS_PORT} --addr=127.0.0.1"]

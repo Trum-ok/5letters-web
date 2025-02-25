@@ -5,3 +5,8 @@ dist
 .DS_Store
 .idea
 *.log
+.gitignore
+docker-compose.yml
+*.sqlite
+*.md
+*.key

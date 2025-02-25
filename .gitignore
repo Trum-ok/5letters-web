@@ -170,3 +170,4 @@ node_modules/
 *.crt
 .key
 *.key
+.DS_Store
