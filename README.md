@@ -14,10 +14,18 @@
 
 Чтобы угадать слово есть **6 попыток**.
 
+
+## Удачи!
+
+<hr>
+
 # Локальный запуск
+1. Клонирование репозитория
+```bash
+git clone https://github.com/Trum-ok/5letters-web.git
+cd 5letters-web
+```
 
 ```bash
 docker-compose up
 ```
-
-## Удачи!
