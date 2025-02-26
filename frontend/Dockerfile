@@ -1,5 +1,9 @@
 # build
 FROM node:20.18.3-alpine AS builder
+
+ARG VITE_BACK_PORT
+ENV VITE_BACK_PORT=$VITE_BACK_PORT
+
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --silent
@@ -8,12 +12,13 @@ RUN npm run build
 
 # prod
 FROM nginx:1.27.4-alpine AS production
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx/templates/nginx.conf.template /etc/nginx/templates/
 COPY --from=builder /app/dist /usr/share/nginx/html
-
-ARG VITE_BACK_PORT
 
 RUN echo "nginx -s reload;" > /reload.sh && \
     chmod +x /reload.sh
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["sh", "-c", \
+    "envsubst '$$SERVER_NAME' < /etc/nginx/templates/nginx.conf.template \
+     > /etc/nginx/conf.d/app.conf && exec nginx -g 'daemon off;'"]
+
