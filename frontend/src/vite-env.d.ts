@@ -2,8 +2,8 @@
 
 interface ImportMetaEnv {
     readonly VITE_BACK_PORT: string
-  }
+}
   
-  interface ImportMeta {
+interface ImportMeta {
     readonly env: ImportMetaEnv
-  }
+}

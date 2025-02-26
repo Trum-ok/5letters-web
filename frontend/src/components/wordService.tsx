@@ -2,9 +2,8 @@ import axios from 'axios';
 
 export async function fetchRandomWord() {
   try {
-    const port = import.meta.env.VITE_BACK_PORT || 1212;
+    const port = window.env.VITE_BACK_PORT || 1212;
     const url = `https://127.0.0.1:${port}/get_random_word`;
-    console.log(import.meta.env.VITE_APP_TITLE);
     console.log(port, url);
     const response = await axios.get<{ word: string }>(url, {
       method: 'GET',
