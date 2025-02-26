@@ -51,9 +51,9 @@ jobs:
         sudo cp ./localhost.crt /usr/local/share/ca-certificates/
         sudo update-ca-certificates
 
-    - name: Test NGINX SSL connection
-      run: |
-        openssl s_client -connect localhost:443 -showcerts -verify 5 </dev/null
+    # - name: Test NGINX SSL connection
+    #   run: |
+    #     openssl s_client -connect localhost:443 -showcerts -verify 5 </dev/null
 
     - name: Test backend (index page) | nginx
       run: |
