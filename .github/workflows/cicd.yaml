@@ -47,7 +47,7 @@ jobs:
 
     - name: Add SSL certificate to trust store
       run: |
-        docker cp 5letters-web-backend_nginx  :/etc/nginx/ssl/localhost.crt ./ 
+        docker cp 5letters-web-backend_nginx:/etc/nginx/ssl/localhost.crt ./ 
         sudo cp ./localhost.crt /usr/local/share/ca-certificates/
         sudo update-ca-certificates
 
