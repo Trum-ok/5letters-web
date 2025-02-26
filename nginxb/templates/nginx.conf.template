@@ -23,7 +23,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /metrics {
-        proxy_pass https://backend:${PROMETHEUS_PORT};
-    }
+    # location /metrics {
+    #     proxy_pass http://backend:${PROMETHEUS_PORT};
+    # }
 }

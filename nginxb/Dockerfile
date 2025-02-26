@@ -5,7 +5,7 @@ RUN rm -rf /etc/nginx/conf.d/*
 RUN apk add --no-cache gettext && \
     adduser -D -u 1001 -g 'nginx' -s /bin/false nginxuser
 
-COPY templates/nginx.conf.template /etc/nginx/templates/
+COPY nginxb/templates/nginx.conf.template /etc/nginx/templates/
 COPY ssl/ /etc/nginx/ssl/
 
 RUN chown -R nginxuser:nginx /etc/nginx && \

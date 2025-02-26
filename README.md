@@ -27,5 +27,5 @@ cd 5letters-web
 ```
 
 ```bash
-docker-compose up
+docker-compose up --build --force-recreate
 ```
