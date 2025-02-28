@@ -13,6 +13,7 @@ jobs:
         GUNICORN_PORT: 8081
         PROMETHEUS_PORT: 9901
         BACK_PORT: 1213
+        SERVER_NAME: localhost
 
     steps:
     - name: Checkout code
@@ -51,13 +52,9 @@ jobs:
         sudo cp ./localhost.crt /usr/local/share/ca-certificates/
         sudo update-ca-certificates
 
-    # - name: Test NGINX SSL connection
-    #   run: |
-    #     openssl s_client -connect localhost:443 -showcerts -verify 5 </dev/null
-
     - name: Test backend (index page) | nginx
       run: |
-        response=$(curl -s -k -o /dev/null -w "%{http_code}" https://localhost:${{ env.BACK_PORT }}/)
+        response=$(curl -s -k -o /dev/null -w "%{http_code}" https://${{ env.SERVER_NAME }}:${{ env.BACK_PORT }}/)
         if [ "$response" -ne 200 ]; then
           echo "Backend test failed: Response code $response"
           exit 1
@@ -67,7 +64,7 @@ jobs:
 
     - name: Test backend (get random word api) | nginx
       run: |
-        response=$(curl -s -k -o /dev/null -w "%{http_code}" https://localhost:${{ env.BACK_PORT }}/get_random_word)
+        response=$(curl -s -k -o /dev/null -w "%{http_code}" https://${{ env.SERVER_NAME }}:${{ env.BACK_PORT }}/get_random_word)
         if [ "$response" -ne 200 ]; then
           echo "Backend test failed: Response code $response"
           exit 1
