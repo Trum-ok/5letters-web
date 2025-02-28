@@ -1,12 +1,12 @@
 server {
     listen 80;
-    server_name ${SERVER_NAME};
+    server_name ${FRONT_NGINX_SERVER_NAME};
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl;
-    server_name ${SERVER_NAME};
+    server_name ${FRONT_NGINX_SERVER_NAME};
 
     # настройки SSL
     ssl_certificate /etc/ssl/localhost.crt;

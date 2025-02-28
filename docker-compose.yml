@@ -31,6 +31,7 @@ services:
             - GUNICORN_PORT=${GUNICORN_PORT}
             - PROMETHEUS_PORT=${PROMETHEUS_PORT}
             - BACKEND_PORT=${BACK_PORT}
+            - SERVER_NAME=${SERVER_NAME}
         networks:
             - public_net
             - backend_net
@@ -52,7 +53,8 @@ services:
         environment:
             - FRONT_PORT=${FRONT_PORT}
             - VITE_BACK_PORT=${VITE_BACK_PORT}
-            - SERVER_NAME=${SERVER_NAME}
+            - VITE_BACK_IP=${VITE_BACK_IP}
+            - FRONT_NGINX_SERVER_NAME=${FRONT_NGINX_SERVER_NAME}
         healthcheck:
             test: ["CMD-SHELL", "curl --fail https://localhost:443 || exit 1"]
             interval: 60s

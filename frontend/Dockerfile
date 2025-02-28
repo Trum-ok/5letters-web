@@ -27,13 +27,9 @@ RUN chmod +x /docker-entrypoint.d/*.sh
 RUN echo "nginx -s reload;" > /reload.sh && \
     chmod +x /reload.sh
 
-# CMD ["sh", "-c", \
-#     "envsubst '$$SERVER_NAME' < /etc/nginx/templates/nginx.conf.template \
-#      > /etc/nginx/conf.d/app.conf && exec nginx -g 'daemon off;'"]
-
 
 CMD ["sh", "-c", \
     "/docker-entrypoint.d/100-init-project-env-variables.sh && \
-     envsubst '$$SERVER_NAME' < /etc/nginx/templates/nginx.conf.template \
+     envsubst '$$FRONT_NGINX_SERVER_NAME' < /etc/nginx/templates/nginx.conf.template \
      > /etc/nginx/conf.d/app.conf && \
      exec nginx -g 'daemon off;'"]
