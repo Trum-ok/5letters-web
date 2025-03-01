@@ -1,29 +1,40 @@
-server {
-    listen 80;
-    server_name ${SERVER_NAME};
-    return 301 https://$host$request_uri;
+user  nginx;
+worker_processes  auto;
+
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx.pid;
+
+events {
+    worker_connections  1024;
 }
 
-server {
-    listen 443 ssl;
-    server_name ${SERVER_NAME};
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
 
-    # настройки SSL
-    ssl_certificate /etc/ssl/localhost.crt;
-    ssl_certificate_key /etc/ssl/localhost.key;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_prefer_server_ciphers on;
-    ssl_ciphers "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256";
+    log_format elk_json escape=json
+        '{'
+            '"@timestamp": "$time_iso8601",'
+            '"remote_addr": "$remote_addr",'
+            '"remote_user": "$remote_user",'
+            '"request": "$request",'
+            '"status": $status,'
+            '"body_bytes_sent": $body_bytes_sent,'
+            '"request_time": $request_time,'
+            '"http_host": "$host",'
+            '"http_referer": "$http_referer",'
+            '"http_user_agent": "$http_user_agent",'
+            '"http_x_forwarded_for": "$http_x_forwarded_for",'
+            '"ssl_protocol": "$ssl_protocol",'
+            '"ssl_cipher": "$ssl_cipher",'
+            '"upstream_addr": "$upstream_addr",'
+            '"upstream_response_time": "$upstream_response_time"'
+        '}';
 
-    location / {
-        proxy_pass http://backend:${GUNICORN_PORT};
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
+    access_log /var/log/nginx/access.log elk_json buffer=32k flush=5m;
+    error_log  /var/log/nginx/error.log warn;
 
-    # location /metrics {
-    #     proxy_pass http://backend:${PROMETHEUS_PORT};
-    # }
+    open_log_file_cache max=1000 inactive=20s valid=1m min_uses=2;
+
+    include /etc/nginx/conf.d/*.conf;
 }
