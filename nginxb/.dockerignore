@@ -16,3 +16,4 @@ docker-compose.yml
 **/local_configs/
 *.key
 **/conf.d
+.gitkeep
