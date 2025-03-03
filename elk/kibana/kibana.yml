@@ -1,0 +1,40 @@
+server.name: "kibana"
+server.host: "0.0.0.0"
+server.port: 5601
+
+server.ssl:
+  enabled: true
+  key: /etc/elk_certs/kibana/kibana.key
+  certificate: /etc/elk_certs/kibana/kibana.crt
+
+elasticsearch:
+  hosts: ["https://elasticsearch:9200"]
+  # username: "kibana_system"
+  # password: "MyPwd!"
+  serviceAccountToken: "AAEAAWVsYXN0aWMva2liYW5hL2tpYmFuYTptd0hhWVlVS1N0S084N0x1bUJMcVl3"
+  ssl:
+    certificateAuthorities: ["/etc/elk_certs/ca/ca.crt"]
+    verificationMode: certificate
+
+# xpack.security.encryptionKey: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+xpack.encryptedSavedObjects.encryptionKey: "af8b566a4cb71901d454513d957f78b1"
+xpack.reporting.encryptionKey: "66737e3b09f0ccf8e45452be7f18c37e"
+xpack.security.encryptionKey: "81442d45453879c3b8afdbd9d2c79f4b"
+
+# Дополнительные настройки безопасности
+# xpack.security.https.ssl:
+  # enabled: true
+
+# xpack.security.enabled: true
+# xpack.security.authc:
+#   api_key.enabled: true
+#   anonymous:
+#     username: anonymous_user
+#     roles: public_role
+#     authz_exception: false
+
+# xpack.encryptedSavedObjects.encryptionKey: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"  # Минимум 32 символа
+# # Настройки для production
+# csp.strict: true
+# logging.verbose: true

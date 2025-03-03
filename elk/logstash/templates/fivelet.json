@@ -1,0 +1,19 @@
+{
+    "data_stream": {},
+    "index_patterns": ["logs-*"],
+    "priority": 100,
+    "template": {
+      "settings": {
+        "number_of_shards": 1,
+        "number_of_replicas": 0
+      },
+      "mappings": {
+        "properties": {
+            "match_mapping_type": { "type": "keyword" }
+        }
+      }
+    },
+    "_meta": {
+      "description": "Custom template for Logstash"
+    }
+}

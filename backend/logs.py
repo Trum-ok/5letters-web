@@ -1,6 +1,9 @@
+import os
 import time
 import logging
+import logging.handlers
 
+from pathlib import Path
 from functools import wraps
 from werkzeug.exceptions import HTTPException
 from flask import request, g, jsonify, Response
@@ -16,6 +19,24 @@ formatter = JsonFormatter(
 )
 handler.setFormatter(formatter)
 logger.addHandler(handler)
+
+PATH_TO_LOGS = '/var/log/flask/app.log'
+if not os.path.exists(PATH_TO_LOGS):
+    log_dir = os.path.dirname(PATH_TO_LOGS)
+    Path(log_dir).mkdir(parents=True, exist_ok=True)
+
+with open(PATH_TO_LOGS, 'a') as fp:
+    os.chmod(PATH_TO_LOGS, 0o666)
+
+file_handler = logging.handlers.RotatingFileHandler(
+    PATH_TO_LOGS,
+    maxBytes=1024*1024*10,  # 10 MB
+    backupCount=5,
+    encoding='utf-8'
+)
+
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
 
 
 def log_action(action_name):

@@ -1,0 +1,45 @@
+filebeat.inputs:
+- type: filestream
+  id: flask-logs
+  enabled: true
+  paths:
+    - /var/log/flask/app.log
+  fields:
+    log_type: "flask"
+
+- type: filestream
+  id: nginx-logs
+  enabled: true
+  paths:
+    - /var/log/nginx/*.log
+  fields:
+    log_type: "nginx"
+
+output.logstash:
+  hosts: ["logstash:5044"]
+  username: "${ELASTICSEARCH_USERNAME}"
+  password: "${ELASTICSEARCH_PASSWORD}"
+  ssl:
+    enabled: true
+    supported_protocols: ["TLSv1.2", "TLSv1.3"]
+    cipher_suites: [
+      "ECDHE-ECDSA-AES-256-GCM-SHA384",
+      "ECDHE-RSA-AES-256-GCM-SHA384"
+    ]
+    certificate_authorities: ["/etc/elk_certs/ca/ca.crt"]  # Путь к корневому CA
+    certificate: "/etc/elk_certs/filebeat/filebeat.crt"        # Для mutual TLS
+    key: "/etc/elk_certs/filebeat/filebeat.key"                # Для mutual TLS
+    # verification_mode: "none"  # Для самоподписанных сертификатов
+    verification_mode: "strict"
+    # certificate_authorities: ["/etc/ssl/localhost.crt"]
+  indices:
+    - index: "flask-logs-%{+yyyy.MM.dd}"
+      when.equals:
+        fields.log_type: "flask"
+    - index: "nginx-logs-%{+yyyy.MM.dd}"
+      when.equals:
+        fields.log_type: "nginx"
+
+processors:
+  - add_docker_metadata:
+      host: "unix:///var/run/docker.sock"

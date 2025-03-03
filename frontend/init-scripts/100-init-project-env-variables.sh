@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-set -ex
+set -e
 
 if [ -z "$VITE_BACK_PORT" ]; then
     echo "Error: VITE_BACK_PORT environment variable is not set."

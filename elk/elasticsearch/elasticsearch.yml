@@ -1,0 +1,28 @@
+cluster.name: docker-cluster
+node.name: ${HOSTNAME}
+network.host: 0.0.0.0
+
+path:
+  data: /usr/share/elasticsearch/data
+  logs: /usr/share/elasticsearch/logs
+
+xpack.security.enabled: true
+xpack.security.authc:
+  api_key.enabled: true
+  anonymous:
+    username: anonymous_user
+    roles: public_role
+    authz_exception: false
+
+# SSL/TLS
+xpack.security.http.ssl:
+  enabled: true
+  verification_mode: certificate
+  keystore.path: /usr/share/elasticsearch/config/certs/elasticsearch.p12
+  truststore.path: /usr/share/elasticsearch/config/certs/elasticsearch.p12
+  keystore.password: "secretpassword"  # Пароль, использованный при создании .p12
+  truststore.password: "secretpassword"
+
+discovery.type: single-node
+discovery.seed_hosts: []
+# cluster.initial_master_nodes: []
