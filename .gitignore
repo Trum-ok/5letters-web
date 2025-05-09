@@ -162,7 +162,7 @@ dist-ssr
 
 # Editor directories and files
 .vscode/*
-!.vscode/extensions.json
+.vscode/extensions.json
 .idea
 .DS_Store
 *.suo
@@ -174,3 +174,9 @@ dist-ssr
 *.pem
 *.csr
 *.srl
+
+.ruff_cache/
+.python-version
+*.lock
+
+uv.lock

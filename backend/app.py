@@ -1,13 +1,14 @@
 import random
-
 from pathlib import Path
-from flask_cors import CORS
-from flask import Flask, jsonify, Response
-# from elasticsearch import Elasticsearch
 
-from metrics import init_metrics
+from flask import Flask, Response, jsonify
+from flask_cors import CORS
+
 from config import PROMETHEUS_PORT
-from logs import logger, log_action, log_request_start, log_request_end, error_handler
+from logs import error_handler, log_action, log_request_end, log_request_start, logger
+
+# from elasticsearch import Elasticsearch
+from metrics import init_metrics
 
 app = Flask(__name__)
 app.logger = logger
@@ -40,7 +41,7 @@ def index() -> Response:
 @log_action("get random word")
 def get_random_word() -> Response:
     random_word = random.choice(_words).upper()
-    app.logger.info(f'get_random_word: {random_word}')
+    app.logger.info(f"get_random_word: {random_word}")
     return jsonify({"word": random_word}), 200
 
 
@@ -48,7 +49,7 @@ def get_random_word() -> Response:
 def br() -> None:
     log_request_start()
 
-    
+
 @app.after_request
 def ar(response):
     return log_request_end(response)
@@ -65,6 +66,7 @@ def prod_app():
     app.debug = False
     return app
 
+
 app = prod_app()
 
 ## uncomment to run without docker & gunicorn
@@ -76,7 +78,7 @@ app = prod_app()
 #     parser.add_argument("--promport", default=PROMETHEUS_PORT, type=int)
 #     parser.add_argument("--debug", default=False, type=bool)
 #     args = parser.parse_args()
-    
+
 #     init_metrics(app, port=args.promport)
 #     load_words()
 

@@ -1,8 +1,9 @@
 import os
 import sys
+
 # import multiprocessing
 
-GUNICORN_PORT = os.getenv('GUNICORN_PORT')
+GUNICORN_PORT = os.getenv("GUNICORN_PORT")
 
 if not GUNICORN_PORT:
     sys.stderr.write("[ERROR] GUNICORN_PORT environment variable is not set\n")
@@ -23,7 +24,7 @@ max_requests = 200
 max_requests_jitter = 50
 loglevel = "info"
 accesslog = "-"  # stdout
-errorlog = "-"   # stdout
+errorlog = "-"  # stdout
 
 # accesslog = "/var/log/flask/access.log"  # stdout
 # errorlog = "/var/log/flask/error.log"   # stdout

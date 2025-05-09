@@ -1,4 +1,6 @@
-venv
+venv/
+.venv/
+logs/
 .git
 .env.local
 .DS_Store
@@ -15,3 +17,4 @@ docker-compose.yml
 **/tests/
 **/local_configs/
 *.key
+*.lock
