@@ -1,6 +1,6 @@
 [project]
 name = "5-letters"
-version = "0.2.0"
+version = "0.2.1"
 description = "Backend for 5-letters web"
 authors = [
     { name = "Artamonov Arkadii", email = "artamarkan@gmail.com" }
