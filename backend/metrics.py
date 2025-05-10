@@ -1,9 +1,11 @@
 import time
 
-from flask import Flask, g, request
+from fastapi import FastAPI
 from prometheus_client import Counter, Gauge, Histogram, start_http_server
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
 
-# Инициализация метрик
 REQUEST_COUNT = Counter(
     "app_requests_total", "Total request count", ["method", "endpoint", "status"]
 )
@@ -13,21 +15,23 @@ REQUEST_DURATION = Histogram(
 ACTIVE_USERS = Gauge("app_active_users", "Active users")
 
 
-def init_metrics(app: Flask, port=5001):
-    # Регистрация хуков
-    @app.before_request
-    def track_request_start():
-        g.start_time = time.time()
+class PrometheusMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.time()
         ACTIVE_USERS.inc()
 
-    @app.after_request
-    def track_request_end(response):
-        latency = time.time() - g.start_time
-        REQUEST_DURATION.labels(request.path).observe(latency)
-        REQUEST_COUNT.labels(request.method, request.path, response.status_code).inc()
+        response: Response = await call_next(request)
+
+        latency = time.time() - start_time
+        endpoint = request.url.path
+        REQUEST_DURATION.labels(endpoint=endpoint).observe(latency)
+        REQUEST_COUNT.labels(
+            method=request.method, endpoint=endpoint, status=response.status_code
+        ).inc()
         ACTIVE_USERS.dec()
+
         return response
 
-    # Запуск сервера метрик
-    # start_http_server(port=port, addr='127.0.0.1')
-    start_http_server(port=port)
+
+def init_metrics(app: FastAPI, addr: str = "0.0.0.0", port: int = 5001):
+    start_http_server(port=port, addr=addr)

@@ -1,6 +1,6 @@
 [project]
 name = "5-letters"
-version = "0.1.0"
+version = "0.2.0"
 description = "Backend for 5-letters web"
 authors = [
     { name = "Artamonov Arkadii", email = "artamarkan@gmail.com" }
@@ -8,11 +8,9 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.13.2"
 dependencies = [
-    "elasticsearch>=9.0.1",
-    "flask>=3.1.0",
+    "fastapi>=0.115.12",
     "prometheus-client>=0.21.1",
     "python-dotenv>=1.1.0",
-    "python-json-logger>=3.3.0",
 ]
 
 [tool.ruff]
@@ -149,6 +147,9 @@ extend-ignore = [
     "COM819",
     "ISC001",
     "ISC002",
+
+    "PLR6301",
+    "RUF029",
 ]
 
 [tool.ruff.lint.extend-per-file-ignores]
@@ -182,15 +183,15 @@ mark-parentheses = false
 
 
 [tool.pytest.ini_options]
-asyncio_mode="auto"
-filterwarnings = [
-    "ignore::DeprecationWarning:asyncpg.*:",
-    "ignore::DeprecationWarning:pytest_asyncio.plugin.*:",
-    "ignore::DeprecationWarning",
-]
 pythonpath = ["."]
 
 [dependency-groups]
+dev = [
+    "fastapi[standard]>=0.115.12",
+    "httpx>=0.28.1",
+    "pytest>=8.3.5",
+    "pytest-async>=0.1.1",
+]
 lint = [
     "ruff>=0.11.8",
 ]

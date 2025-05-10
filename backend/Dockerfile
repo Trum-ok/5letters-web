@@ -1,17 +1,16 @@
 # build
-FROM python:3.12.5-alpine AS builder
+FROM python:3.13.3-alpine AS builder
 
-RUN apk add --no-cache curl
+RUN apk add --no-cache build-base libffi-dev openssl-dev \
+    && pip install --upgrade pip
 
 WORKDIR /app
-
 COPY requirements.txt .
-RUN pip install --upgrade pip
-RUN pip install --user -r requirements.txt
-RUN mkdir -p /var/log/flask && chmod 777 /var/log/flask
+
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /wheels -r requirements.txt
 
 # prod
-FROM python:3.12.5-alpine
+FROM python:3.13.3-alpine AS runtime
 
 WORKDIR /app
 
