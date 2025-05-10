@@ -32,7 +32,7 @@ def load_words(path: str) -> list[str]:
         if not words:
             raise ValueError("File is empty")
     except Exception as e:
-        raise RuntimeError("Failed to load word list") from e
+        raise RuntimeError("Failed to load word list: %s", e) from e
     return words
 
 
