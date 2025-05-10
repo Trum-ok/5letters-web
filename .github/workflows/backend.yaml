@@ -1,0 +1,41 @@
+name: Backend Tests
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+  pull_request:
+    paths:
+      - 'backend/**'
+
+jobs:
+  lint:
+    uses: trum-ok/reusable-workflows/.github/workflows/ruff-lint.yaml@master
+    with:
+      path: 'backend'
+      python-version: '3.13.3'
+      ruff-version: '0.11.8'
+
+  tests:
+    needs: [lint]
+    runs-on: ubuntu-latest
+    defaults:
+        run:
+          working-directory: backend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13.3
+        
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          pytest --tb=short --disable-warnings -q

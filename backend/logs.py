@@ -1,87 +1,45 @@
-import os
-import time
 import logging
-import logging.handlers
+import time
+from collections.abc import Callable
 
-from pathlib import Path
-from functools import wraps
-from werkzeug.exceptions import HTTPException
-from flask import request, g, jsonify, Response
-from pythonjsonlogger.json import JsonFormatter
+from fastapi import HTTPException, Request, Response
+from fastapi.responses import JSONResponse
 
 logger = logging.getLogger("app")
-logger.setLevel(logging.INFO)
-
-handler = logging.StreamHandler()
-formatter = JsonFormatter(
-    "%(asctime)s %(levelname)s %(name)s %(message)s %(route)s %(method)s %(status)s",
-    json_ensure_ascii=False
-)
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-
-PATH_TO_LOGS = '/var/log/flask/app.log'
-if not os.path.exists(PATH_TO_LOGS):
-    log_dir = os.path.dirname(PATH_TO_LOGS)
-    Path(log_dir).mkdir(parents=True, exist_ok=True)
-
-with open(PATH_TO_LOGS, 'a') as fp:
-    os.chmod(PATH_TO_LOGS, 0o666)
-
-file_handler = logging.handlers.RotatingFileHandler(
-    PATH_TO_LOGS,
-    maxBytes=1024*1024*10,  # 10 MB
-    backupCount=5,
-    encoding='utf-8'
-)
-
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
 
 
-def log_action(action_name):
-    def decorator(func):
-        @wraps(func)  # Сохраняем метаданные оригинальной функции
-        def wrapper(*args, **kwargs):
-            logger.info(f"Action started: {action_name}", extra={
-                "route": request.path,
-                "method": request.method,
-                "status": "started"
-            })
-            result = func(*args, **kwargs)
-            logger.info(f"Action completed: {action_name}", extra={
-                "route": request.path,
-                "method": request.method,
-                "status": "completed"
-            })
-            return result
-        return wrapper
-    return decorator
+def log_request_start(request: Request) -> None:
+    request.state.start_time = time.time()
 
 
-def log_request_start() -> None:
-    g.start_time = time.time()
-    logger.info("Request started", extra={
-        "route": request.path,
-        "method": request.method,
-        "status": "started"
-    })
-
-
-def log_request_end(response):
-    latency = time.time() - g.start_time
-    logger.info("Request completed", extra={
-        "route": request.path,
-        "method": request.method,
-        "status_code": response.status_code,
-        "latency": f"{latency:.3f}s"
-    })
+def log_request_end(request: Request, response: Response) -> JSONResponse:
+    latency = time.time() - request.state.start_time
+    logger.info(
+        "Request completed",
+        extra={
+            "route": request.url.path,
+            "method": request.method,
+            "status": response.status_code,
+            "latency": f"{latency:.3f}s",
+        },
+    )
     return response
 
 
-def error_handler(error) -> tuple[Response, int]:
-    logger.error("Unhandled exception", exc_info=True)
-    code = 500
-    if isinstance(error, HTTPException):
-        code = error.code
-    return jsonify(error=str(error)), code
+async def error_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Глобальный обработчик ошибок для FastAPI."""
+    logger.error(
+        "Unhandled exception",
+        extra={"route": request.url.path, "method": request.method},
+    )
+    status_code = exc.status_code if isinstance(exc, HTTPException) else 500
+    return JSONResponse(content={"error": str(exc)}, status_code=status_code)
+
+
+async def logging_middleware(request: Request, call_next: Callable):
+    log_request_start(request)
+    try:
+        response: Response = await call_next(request)
+    except Exception as exc:
+        return await error_handler(request, exc)
+    return log_request_end(request, response)

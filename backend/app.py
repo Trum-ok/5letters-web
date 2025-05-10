@@ -1,88 +1,80 @@
+import logging
+import os
 import random
+from contextlib import asynccontextmanager
 
-from pathlib import Path
-from flask_cors import CORS
-from flask import Flask, jsonify, Response
-# from elasticsearch import Elasticsearch
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from prometheus_client import start_http_server
 
-from metrics import init_metrics
 from config import PROMETHEUS_PORT
-from logs import logger, log_action, log_request_start, log_request_end, error_handler
+from config.loggers import setup_logging
+from logs import error_handler
+from metrics import PrometheusMiddleware
+from models import GetHealthResponse, GetWordResponse
 
-app = Flask(__name__)
-app.logger = logger
-cors = CORS(app)
-# es = Elasticsearch(["elasticsearch:9200"], timeout=30)
+setup_logging()
+logger = logging.getLogger("app")
 
-_words: list[str] = []
+WORDS_PATH = "./russian_words.txt"
 
 
-def load_words() -> None:
+def load_words(path: str) -> list[str]:
     """Загружает слова из файла в память"""
-    global _words
     try:
-        file_path = Path("russian_words.txt")
-        _words = file_path.read_text(encoding="utf-8").split()
-        if not _words:
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"File {path} not found")
+
+        with open(path, "r", encoding="utf-8") as file:
+            words = file.read().split()
+
+        if not words:
             raise ValueError("File is empty")
     except Exception as e:
-        app.logger.error(f"Error loading words: {str(e)}")
-        exit(1)
+        raise RuntimeError("Failed to load word list: %s", e) from e
+    return words
 
 
-@app.route("/", methods=["GET"])
-@log_action("main page")
-def index() -> Response:
-    return jsonify({"status": "ok"}), 200
+words: list[str] = load_words(WORDS_PATH)
 
 
-@app.route("/get_random_word", methods=["GET"])
-@log_action("get random word")
-def get_random_word() -> Response:
-    random_word = random.choice(_words).upper()
-    app.logger.info(f'get_random_word: {random_word}')
-    return jsonify({"word": random_word}), 200
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    start_http_server(port=PROMETHEUS_PORT, addr="127.0.0.1")
+    logger.info("Prometheus metrics server started on port %d", PROMETHEUS_PORT)
+    yield
 
 
-@app.before_request
-def br() -> None:
-    log_request_start()
+app = FastAPI(lifespan=lifespan)
+app.add_exception_handler(Exception, error_handler)
 
-    
-@app.after_request
-def ar(response):
-    return log_request_end(response)
+app.add_middleware(PrometheusMiddleware)
 
-
-@app.errorhandler(Exception)
-def handle_exception(e):
-    return error_handler(e)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
-def prod_app():
-    # init_metrics(app, PROMETHEUS_PORT)
-    load_words()
-    app.debug = False
-    return app
+@app.get(
+    "/",
+    tags=["index", "health"],
+    summary="Health check",
+    response_model=GetHealthResponse,
+)
+async def index():
+    return JSONResponse(content={"status": "ok"})
 
-app = prod_app()
 
-## uncomment to run without docker & gunicorn
-# import argparse
-#
-# def local_main() -> None:
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument("--port", default=FLASK_PORT, type=int)
-#     parser.add_argument("--promport", default=PROMETHEUS_PORT, type=int)
-#     parser.add_argument("--debug", default=False, type=bool)
-#     args = parser.parse_args()
-    
-#     init_metrics(app, port=args.promport)
-#     load_words()
-
-#     app.debug = args.debug
-#     app.run(host="0.0.0.0", port=args.port)
-#
-#
-# if __name__ == "__main__":
-#     local_main()
+@app.get(
+    "/get_random_word",
+    tags=["words"],
+    summary="Get a random word",
+    response_model=GetWordResponse,
+)
+async def get_random_word():
+    word = random.choice(words).upper()
+    return JSONResponse(content={"word": word})
