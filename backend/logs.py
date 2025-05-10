@@ -41,5 +41,5 @@ async def logging_middleware(request: Request, call_next: Callable):
     try:
         response: Response = await call_next(request)
     except Exception as exc:
-        return error_handler(request, exc)
+        return await error_handler(request, exc)
     return log_request_end(request, response)
