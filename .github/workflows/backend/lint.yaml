@@ -1,0 +1,27 @@
+name: Backend Linter and Formatter
+
+on:
+    push:
+        paths:
+            - 'backend/'
+    pull_request:
+        paths:
+            - 'backend/'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13.3
+
+      - name: Install ruff
+        run: pip install ruff==0.11.8
+
+      - name: Run linters and formatters
+        run: ruff format --check && ruff check --no-fix
