@@ -11,21 +11,32 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /wheels -r requirements.txt
 
 # prod
 FROM python:3.13.3-alpine AS runtime
+RUN apk add --no-cache libffi openssl \
+    && adduser -D -u 1000 fastapiuser
 
 WORKDIR /app
 
-COPY gunicorn.conf.py ./gunicorn.conf.py
-COPY --from=builder /root/.local /root/.local
+COPY --from=builder /wheels /wheels
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade \
+        --find-links=/wheels -r requirements.txt \
+    && pip install --no-cache-dir uvicorn[standard] \
+    && rm -rf /wheels
+
 COPY . .
 
-RUN pip install --no-cache-dir gunicorn
+RUN chown -R fastapiuser:fastapiuser /app
+USER fastapiuser
 
-ARG GUNICORN_PORT PROMETHEUS_PORT
-ENV GUNICORN_PORT=${GUNICORN_PORT} \
-    PROMETHEUS_PORT=${PROMETHEUS_PORT}
+ARG APP_PORT=8000
+ARG PROMETHEUS_PORT=8001
+
+ENV APP_PORT=${APP_PORT} \
+    PROMETHEUS_PORT=${PROMETHEUS_PORT} \
+    PATH="/home/fastapiuser/.local/bin:$PATH"
 
 COPY russian_words.txt .
-COPY . .
 
-CMD ["sh", "-c", "gunicorn app:app -c gunicorn.conf.py"]
-# & python -m prometheus_client --port=${PROMETHEUS_PORT} --addr=127.0.0.1"]
+EXPOSE ${APP_PORT} ${PROMETHEUS_PORT}
+
+CMD ["sh","-c","uvicorn app:app --host 0.0.0.0 --port $APP_PORT"]
